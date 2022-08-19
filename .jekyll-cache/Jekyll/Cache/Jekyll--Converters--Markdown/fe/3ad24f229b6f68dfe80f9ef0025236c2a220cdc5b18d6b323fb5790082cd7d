@@ -1,0 +1,263 @@
+I"4<blockquote>
+  <p>본 포스트는, Terraform Up &amp; Running 테라폼 - OREILLY를 참고했습니다.</p>
+</blockquote>
+
+<p>이전 포스트에서 생성한 EC2를 변수와 출력을 이용해서 조금 더 프로그래밍적으로 만들고자 합니다.</p>
+
+<h3 id="변수">변수</h3>
+
+<p>많은 프로그래밍에서 DRY원칙 ( Don’t Repeat Yourself )가 있습니다.</p>
+
+<p>즉 똑같은 일을 두번하지 말라는 말입니다.</p>
+
+<p>테라폼에서도 이를 위해 변수를 생성하고 이를 이용할 수 있습니다.</p>
+
+<p>이전 포스트에서 생성한 EC2에서 변수를 사용하는 방법을 설명하고자 합니다.</p>
+
+<hr />
+
+<h3 id="기본-사용법">기본 사용법</h3>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>variable <span class="s2">"var_name"</span> <span class="o">{</span>
+  description <span class="o">=</span> <span class="s2">"var's description"</span>
+  <span class="nb">type</span> <span class="o">=</span> number
+  default <span class="o">=</span> 42
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>기본적으로 변수는, description, type, default이렇게 3개로 이루어져 있습니다.</p>
+
+<p>default의 경우 선택적으로 설정하는데, 만약 default값이 설정되어 있지 않는다면 terraform apply시 입력받습니다.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>variable <span class="s2">"number_example"</span> <span class="o">{</span>
+  description <span class="o">=</span> <span class="s2">"An example of a number variable in Terraform"</span>
+  <span class="nb">type</span> <span class="o">=</span> number
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>예시로 살펴보면 위와 같이 작성하고 <code class="language-plaintext highlighter-rouge">terraform apply</code>를 입력했다면,</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>terraform apply
+var.number_example
+  An example of a number variable <span class="k">in </span>Terraform
+
+  Enter a value: 
+</code></pre></div></div>
+
+<p>위와 같이, description과 value를 입력하라는 내용이 나옵니다.</p>
+
+<p>만약 default를 선언하고 값을 입력 때, 변경하고 싶다면,</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>terraform apply <span class="nt">-var</span><span class="o">=</span><span class="s2">"number_example"</span><span class="o">=</span>2
+</code></pre></div></div>
+
+<p>위와 같이 입력할 수 있습니다.</p>
+
+<hr />
+
+<h3 id="다양한-type">다양한 type</h3>
+
+<h5 id="number">number</h5>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>variable <span class="s2">"number_example"</span> <span class="o">{</span>
+  description <span class="o">=</span> <span class="s2">"An example of a number variable in Terraform"</span>
+  <span class="nb">type</span> <span class="o">=</span> number
+  default <span class="o">=</span> 42
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>먼저 위에서 살펴본 number type입니다.</p>
+
+<p>숫자를 변수로 사용할 때 사용합니다.</p>
+
+<h5 id="string">string</h5>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>variable <span class="s2">"string_example"</span> <span class="o">{</span>
+  description <span class="o">=</span> <span class="s2">"An example of a string variable in Terraform"</span>
+  <span class="nb">type</span> <span class="o">=</span> string
+  default <span class="o">=</span> <span class="s2">"example"</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>다음으론 문자열 타입입니다.</p>
+
+<p>문자열을 입력받을 때 사용합니다.</p>
+
+<h5 id="list---string">list - string</h5>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>variable <span class="s2">"list_example"</span> <span class="o">{</span>
+  description <span class="o">=</span> <span class="s2">"An example of list in Terraform"</span>
+  <span class="nb">type</span> <span class="o">=</span> list
+  default <span class="o">=</span> <span class="o">[</span><span class="s2">"a"</span>, <span class="s2">"b"</span>, <span class="s2">"c"</span><span class="o">]</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>리스트를 변수로 사용할 수 있는데, 여기서 list는 string의 List임을 참고하세요</p>
+
+<h5 id="listnumber">list(number)</h5>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>variable <span class="s2">"list_numeric_example"</span> <span class="o">{</span>
+  <span class="nb">type</span> <span class="o">=</span> list<span class="o">(</span>number<span class="o">)</span>
+  default <span class="o">=</span> <span class="o">[</span>1,2,3]
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>만약 Number list를 사용하고 싶다면, 괄호를 통해 number라고 입력합니다.</p>
+
+<h5 id="map">map</h5>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>variable <span class="s2">"map_example"</span> <span class="o">{</span>
+  <span class="nb">type</span> <span class="o">=</span> map<span class="o">(</span>string<span class="o">)</span>
+
+  default <span class="o">=</span> <span class="o">{</span>
+    key1 <span class="o">=</span> <span class="s2">"value1"</span>
+    key2 <span class="o">=</span> <span class="s2">"value2"</span>
+    key3 <span class="o">=</span> <span class="s2">"value3"</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>맵을 이용해서 키 밸류를 변수로 사용할 수도 있는데, 위와 같이 사용합니다.</p>
+
+<h5 id="object">object</h5>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>variable <span class="s2">"object_example"</span> <span class="o">{</span>
+  <span class="nb">type</span> <span class="o">=</span> object<span class="o">({</span>
+    name <span class="o">=</span> string
+    age <span class="o">=</span> number
+    tags <span class="o">=</span> list<span class="o">(</span>string<span class="o">)</span>
+    enabled <span class="o">=</span> bool
+  <span class="o">})</span>
+
+  default <span class="o">=</span> <span class="o">{</span>
+    name <span class="o">=</span> <span class="s2">"value1"</span>
+    age <span class="o">=</span> 42
+    tags <span class="o">=</span> <span class="o">[</span><span class="s2">"a"</span>, <span class="s2">"b"</span>, <span class="s2">"c"</span><span class="o">]</span>
+    enabled <span class="o">=</span> <span class="nb">true</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>마지막으로 object 타입입니다. C언어의 구조체랑 비슷한 구조를 가져서 익숙합니다.</p>
+
+<p>map이나 object를 사용한다면, cli를 통해서 입력받기는 어려울 것 같고, default를 사용할 것 같습니다.</p>
+
+<hr />
+
+<h3 id="포트번호를-변수로-받기">포트번호를 변수로 받기</h3>
+
+<p>이전 포스트에서 만들었던 EC2는 8080 포트를 고정으로 받고 8080로 접속했다면, 이번에는 이를 변수로 받고 사용할 예정입니다.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># var.tf</span>
+variable <span class="s2">"server_port"</span> <span class="o">{</span>
+  description <span class="o">=</span> <span class="s2">"The port hte server will use for HTTP requests"</span>
+  <span class="nb">type</span> <span class="o">=</span> number
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>먼저 server_port라는 변수를 선언했습니다.</p>
+
+<p>default값은 따로 설정하지 않아서, 직접 입력받도록 유도했습니다.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># main.tf</span>
+provider <span class="s2">"aws"</span> <span class="o">{</span>
+  region <span class="o">=</span> <span class="s2">"ap-northeast-2"</span>
+<span class="o">}</span>
+
+resource <span class="s2">"aws_instance"</span> <span class="s2">"ec2"</span> <span class="o">{</span>
+  ami <span class="o">=</span> <span class="s2">"ami-0ea5eb4b05645aa8a"</span>
+  instance_type <span class="o">=</span> <span class="s2">"t3.nano"</span>
+
+  tags <span class="o">=</span> <span class="o">{</span>
+    Name <span class="o">=</span> <span class="s2">"terraform-example"</span>
+  <span class="o">}</span>
+
+  user_data <span class="o">=</span> <span class="o">&lt;&lt;-</span><span class="no">EOF</span><span class="sh">
+                #!/bin/bash
+                echo "Hello, world" &gt; index.html
+                nohup busybox httpd -f -p </span><span class="k">${</span><span class="nv">var</span><span class="p">.server_port</span><span class="k">}</span><span class="sh"> &amp;
+</span><span class="no">                EOF
+</span>  vpc_security_group_ids <span class="o">=</span> <span class="o">[</span>aws_security_group.instance.id]
+<span class="o">}</span>
+
+resource <span class="s2">"aws_security_group"</span> <span class="s2">"instance"</span> <span class="o">{</span>
+  name <span class="o">=</span> <span class="s2">"terraform-example-instance"</span>
+  ingress <span class="o">{</span>
+    from_port <span class="o">=</span> var.server_port
+    to_port <span class="o">=</span> var.server_port
+    protocol <span class="o">=</span> <span class="s2">"tcp"</span>
+    cidr_blocks <span class="o">=</span> <span class="o">[</span><span class="s2">"0.0.0.0/0"</span><span class="o">]</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>이전에 사용했던 코드에서 변수로 변경했습니다.</p>
+
+<p>주목해야할 부분은 변수를 사용하는 부분입니다.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>from_port <span class="o">=</span> var.server_port
+</code></pre></div></div>
+
+<p>변수를 사용할 때는 var이후 .변수이름을 통해서 사용합니다.</p>
+
+<p>User_data에 보면 ${var.server_port}가 있는데, 여기서 var.sever_port만 작성하면 문자열로 인식해서 오류를 일으킵니다. 이를 변수라고 인지시키기 위해서 ${var.server_port} 를 사용합니다.</p>
+
+<p>이렇게 구성하고 terraform apply를 입력합니다.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>terraform apply
+var.server_port
+  The port hte server will use <span class="k">for </span>HTTP requests
+
+  Enter a value: 8000
+</code></pre></div></div>
+
+<p>저는 8000번 포트를 입력하고 yes를 입력했습니다.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl http://[public ip]:8000
+Hello, world
+</code></pre></div></div>
+
+<p>이제 정상적으로 생성되었는지 테스트합니다.</p>
+
+<hr />
+
+<h3 id="output">Output</h3>
+
+<p>처음 terraform을 접했을 때, var이랑 output이 뭔 차이를 가지는 지 궁금했습니다.</p>
+
+<p>var의 경우 변수고, output의 경우 출력문이라고 생각하면 편합니다.</p>
+
+<p>생성한 EC2의 접속주소를 출력하도록 output을 만들어보겠습니다.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># output.tf</span>
+
+output <span class="s2">"test_ip"</span> <span class="o">{</span>
+  description <span class="o">=</span> <span class="s2">"This is test_ip"</span>
+  value <span class="o">=</span> <span class="s2">"</span><span class="k">${</span><span class="nv">aws_instance</span><span class="p">.ec2.public_ip</span><span class="k">}</span><span class="s2">:</span><span class="k">${</span><span class="nv">var</span><span class="p">.server_port</span><span class="k">}</span><span class="s2">"</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>value의 경우 생성될 instance의 public ip와 입력받을 port를 출력하도록 구성했습니다.</p>
+
+<p>이제 다시 terraform apply이후 8000를 입력해줍니다.</p>
+
+<p>정상적으로 생성이 된 후, 설정한 Output이 출력됨을 알 수 있습니다.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Outputs:
+
+test_ip <span class="o">=</span> <span class="s2">"3.35.167.31:8000"</span>
+</code></pre></div></div>
+
+<hr />
+
+<p>간단한 var와 ouput사용법을 알아봤습니다.</p>
+
+<p>둘다 유용하게 사용될 듯합니다.</p>
+
+<p>이전과 동일하게 더 이상 안쓸 리소스는 과금을 피하기 위해서 주석처리 후 apply해줍니다.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>terraform destroy
+</code></pre></div></div>
+<p>destroy명령어를 통해서 지울 수도 있습니다. (단 undo가 불가능 하니 신중하게 동작하세요.)</p>
+
+:ET
